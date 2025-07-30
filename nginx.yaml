@@ -1,0 +1,62 @@
+# ⚠️ 高風險：使用 cluster-admin 權限的 ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nginx-admin-sa
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: nginx-admin-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: nginx-admin-sa
+  namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80 # ⚠️ NGINX Service（HTTP）
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      serviceAccountName: nginx-admin-sa    # ⚠️ 授予 cluster-admin 權限
+      containers:
+      - name: nginx
+        image: nginx:1.15                  # ⚠️ 有 CVE 的版本
+        ports:
+        - containerPort: 80
+        securityContext:
+          privileged: true                 # ⚠️ 啟用特權模式
+          allowPrivilegeEscalation: true   # ⚠️ 允許權限升級
+        volumeMounts:
+        - name: host-root
+          mountPath: /host                 # ⚠️ 掛載主機根目錄
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /
+          type: Directory
