@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "dependencies": {
-    "express": "4.17.1",           // ⚠️ CVE Version (DoS)
-    "lodash": "4.17.11",           // ⚠️ CVE (Prototype pollution)
-    "mongoose": "5.2.0"            // ⚠️ CVE Version (injection)
+    "express": "4.17.1",
+    "lodash": "4.17.11",
+    "mongoose": "5.2.0"
   }
 }
